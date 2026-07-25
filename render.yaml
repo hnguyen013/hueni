@@ -10,10 +10,15 @@ databases:
     plan: free
     databaseName: hoclieuso
     user: hoclieuso
+    region: singapore  # BẮT BUỘC khớp region với web service bên dưới —
+    # internal DATABASE_URL của Render chỉ resolve được giữa các service
+    # CÙNG region. Thiếu dòng này, Render tự rơi database vào region mặc
+    # định (Oregon) trong khi web service ở Singapore → migrate lúc build
+    # báo lỗi DNS "Name or service not known" (đã gặp thực tế, xem log).
 
 services:
   - type: web
-    name: hoclieuso
+    name: hueni
     runtime: python
     plan: free
     region: singapore
@@ -30,11 +35,11 @@ services:
       - key: DJANGO_DEBUG
         value: "False"
       # Render tự thay ${RENDER_EXTERNAL_HOSTNAME} bằng domain thật lúc chạy
-      # (vd hoclieuso.onrender.com) — không cần tự điền tay.
+      # (hueni.onrender.com) — không cần tự điền tay.
       - key: DJANGO_ALLOWED_HOSTS
         fromService:
           type: web
-          name: hoclieuso
+          name: hueni
           property: host
       - key: DJANGO_CSRF_TRUSTED_ORIGINS
         value: "https://hueni.onrender.com"

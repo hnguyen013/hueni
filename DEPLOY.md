@@ -39,22 +39,31 @@
 
 1. Vào <https://dashboard.render.com/blueprints> → **New Blueprint Instance**.
 2. Chọn repo GitHub vừa đẩy lên. Render tự đọc `render.yaml` ở gốc repo,
-   hiện preview: 1 Web Service (`hoclieuso`) + 1 Postgres (`hoclieuso-db`).
+   hiện preview: 1 Web Service (`hueni`) + 1 Postgres (`hoclieuso-db`).
 3. Bấm **Apply** — Render tự động:
    - Tạo Postgres database, set `DATABASE_URL` cho Web Service.
    - Tự sinh `DJANGO_SECRET_KEY` ngẫu nhiên (an toàn, không cần tự nghĩ).
    - Set `DJANGO_ALLOWED_HOSTS` = đúng domain Render vừa cấp
-     (vd `hoclieuso.onrender.com`).
+     (`hueni.onrender.com`).
    - Chạy `buildCommand` (cài dependency, build Tailwind, `collectstatic`,
      `migrate`) rồi `startCommand` (`gunicorn config.wsgi:application`).
-4. **Sửa lại `DJANGO_CSRF_TRUSTED_ORIGINS`** trong `render.yaml` (hoặc trực
-   tiếp trên dashboard, mục Environment) thành đúng domain Render cấp cho
-   bạn nếu khác `hoclieuso.onrender.com` (Render báo domain thật ngay sau
-   khi tạo service — sửa xong bấm **Manual Deploy → Deploy latest commit**
-   để áp dụng).
+4. `DJANGO_CSRF_TRUSTED_ORIGINS` đã được set sẵn đúng
+   `https://hueni.onrender.com` khớp tên service — không cần sửa gì thêm
+   nếu build từ `render.yaml` này. Nếu build ra domain khác (Render đôi khi
+   thêm hậu tố nếu tên bị trùng, vd `hueni-abcd.onrender.com`), sửa lại giá
+   trị này cho khớp domain thật rồi **Manual Deploy → Deploy latest commit**.
 5. Đợi build xong (theo dõi log ngay trên dashboard) → mở link
    `https://<ten-app>.onrender.com` — sẽ thấy trang chủ (chưa có dữ liệu
    vì DB Postgres mới còn trống).
+
+> ⚠️ **Muốn đổi tên app/domain SAU KHI đã deploy?** Không sửa `name:` trong
+> `render.yaml` rồi push — Blueprint dùng `name` để nhận diện service đã
+> tồn tại, sửa trong file mà không đổi trên dashboard trước dễ khiến Render
+> hiểu nhầm là phải **tạo mới** 1 service khác, để service cũ mồ côi. Thứ tự
+> đúng: (1) Dashboard → service đang chạy → **Settings → Name** → đổi tên
+> → Save (đây là bước đổi domain thật); (2) sau đó mới sửa `name:` trong
+> `render.yaml` cho khớp lại; (3) `git push` rồi Manual Deploy.
+
 
 ## 3. Nếu muốn tự cấu hình tay (không dùng Blueprint)
 
@@ -142,3 +151,20 @@ Chỉ cần `git push` lên nhánh đã kết nối — Render tự động buil
 (có thể tắt "Auto-Deploy" trên dashboard nếu muốn tự bấm Deploy thủ công).
 Nhớ: nếu sửa CSS/template, `npm run build` đã nằm trong `buildCommand` nên
 Render tự chạy lại, không cần build tay trước khi push.
+
+## 8. Sự cố thực tế đã gặp & đã sửa
+
+- **Build lỗi `django.db.utils.OperationalError: [Errno -2] Name or
+  service not known`** khi chạy `migrate` trong `buildCommand`. Nguyên
+  nhân: `databases:` trong `render.yaml` **thiếu `region:`**, khiến
+  Postgres bị tạo ở region mặc định (khác region `singapore` của web
+  service) — internal `DATABASE_URL` chỉ resolve được giữa các service
+  **cùng region**, khác region là lỗi DNS y hệt trên. Đã sửa: thêm
+  `region: singapore` vào `databases:` trong `render.yaml` (khớp web
+  service). Nếu gặp lại lỗi này: kiểm tra `region` của cả 2 khối
+  `databases:`/`services:` có khớp nhau không trước khi nghi ngờ chỗ khác.
+- **Đổi tên app/domain (vd `hoclieuso` → `hueni`)** phải làm đúng thứ tự:
+  đổi trên Dashboard (**Settings → Name**) trước, rồi mới sửa `name:`
+  trong `render.yaml` cho khớp — xem cảnh báo ⚠️ ở mục 2. Sửa ngược thứ tự
+  (chỉ sửa file rồi push) có thể khiến Render tạo nhầm 1 service mới thay
+  vì đổi tên service cũ.
