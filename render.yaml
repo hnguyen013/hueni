@@ -37,10 +37,7 @@ services:
       # Render tự thay ${RENDER_EXTERNAL_HOSTNAME} bằng domain thật lúc chạy
       # (hueni.onrender.com) — không cần tự điền tay.
       - key: DJANGO_ALLOWED_HOSTS
-        fromService:
-          type: web
-          name: hueni
-          property: host
+        value: "hueni.onrender.com"
       - key: DJANGO_CSRF_TRUSTED_ORIGINS
         value: "https://hueni.onrender.com"
       - key: DATABASE_URL
