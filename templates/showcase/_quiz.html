@@ -1,0 +1,97 @@
+{% comment %}
+  Section "Bộ câu hỏi" (Task 3.5) — flashcard tương tác, JS thuần.
+  Include vào lesson_detail.html (block lesson_sections), sau section Video/
+  Phiếu học tập.
+
+  Field dùng (khớp showcase/models.py):
+    lesson.quizzes.all -> mỗi quiz: quiz.title, quiz.questions.all
+      question.question_text, question.explanation, question.choices.all
+        choice.choice_text, choice.is_correct
+
+  Cơ chế: mỗi quiz là 1 "flashcard" hiển thị từng câu hỏi một (ẩn/hiện bằng
+  JS), bấm 1 lựa chọn -> tô xanh (secondary-container) nếu đúng, đỏ
+  (error-container) nếu sai, đồng thời luôn tô xanh đáp án đúng để người
+  dùng biết, hiện explanation, hiện nút "Câu tiếp". Không gửi request server,
+  không lưu kết quả — thuần client-side (JS: static/js/quiz_demo.js).
+{% endcomment %}
+{% load static %}
+
+{% with quiz_list=lesson.quizzes.all %}
+{% if quiz_list %}
+<section id="bo-cau-hoi" class="mb-stack-lg">
+  <h2 class="font-headline-lg-mobile text-xl md:text-headline-lg text-primary mb-stack-md">
+    Bộ câu hỏi
+  </h2>
+
+  <div class="flex flex-col gap-8">
+    {% for quiz in quiz_list %}
+      {% with question_list=quiz.questions.all %}
+      {% if question_list %}
+        <div class="quiz-card max-w-2xl rounded-xl bg-surface-container-lowest shadow-[0_16px_40px_rgba(0,45,55,0.10)] p-6 md:p-10">
+
+          <div class="flex items-center justify-between mb-stack-md">
+            <span class="font-label-md text-label-md uppercase tracking-wider text-secondary">
+              {{ quiz.title|default:"Kiểm tra nhanh" }}
+            </span>
+            <span class="quiz-progress font-label-md text-label-md text-on-surface-variant"
+                  data-total="{{ question_list|length }}">
+              Câu 1/{{ question_list|length }}
+            </span>
+          </div>
+
+          {# ---- Thanh tiến trình ---- #}
+          <div class="w-full h-1.5 rounded-full bg-surface-container mb-stack-md overflow-hidden">
+            <div class="quiz-progress-bar h-full bg-secondary rounded-full transition-all duration-300"
+                 style="width: {% widthratio 1 question_list|length 100 %}%"></div>
+          </div>
+
+          <div class="quiz-questions">
+            {% for question in question_list %}
+              <div class="quiz-question {% if not forloop.first %}hidden{% endif %}" data-index="{{ forloop.counter0 }}">
+                <h3 class="font-headline-lg-mobile text-lg md:text-xl text-on-surface mb-stack-md">
+                  {{ question.question_text }}
+                </h3>
+
+                <div class="quiz-choices grid gap-3">
+                  {% for choice in question.choices.all %}
+                    <button type="button"
+                            class="quiz-choice w-full text-left rounded-lg border border-outline-variant bg-surface-container-lowest px-5 py-3 font-body-md text-body-md text-on-surface transition-colors duration-200 hover:border-secondary"
+                            data-correct="{% if choice.is_correct %}true{% else %}false{% endif %}">
+                      {{ choice.choice_text }}
+                    </button>
+                  {% endfor %}
+                </div>
+
+                {% if question.explanation %}
+                  <div class="quiz-explanation hidden mt-stack-md rounded-lg bg-surface-container-low px-5 py-4 font-body-md text-body-md text-on-surface-variant">
+                    {{ question.explanation }}
+                  </div>
+                {% endif %}
+
+                <button type="button"
+                        class="quiz-next hidden mt-stack-md inline-flex items-center gap-2 font-label-md text-label-md uppercase tracking-wider bg-primary text-on-primary rounded-full px-6 py-3 hover:opacity-80 transition-all duration-300">
+                  Câu tiếp &rarr;
+                </button>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="quiz-done hidden text-center py-4">
+            <p class="font-headline-lg-mobile text-lg text-primary mb-stack-sm">
+              Bạn đã hoàn thành bộ câu hỏi!
+            </p>
+            <button type="button"
+                    class="quiz-restart inline-flex items-center gap-2 font-label-md text-label-md uppercase tracking-wider border border-secondary text-secondary rounded-full px-6 py-3 hover:bg-secondary-container transition-all duration-300">
+              Làm lại
+            </button>
+          </div>
+        </div>
+      {% endif %}
+      {% endwith %}
+    {% endfor %}
+  </div>
+</section>
+
+<script src="{% static 'js/quiz_demo.js' %}" defer></script>
+{% endif %}
+{% endwith %}

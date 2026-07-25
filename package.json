@@ -1,0 +1,13 @@
+{
+  "name": "hoclieuso-tailwind",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build Tailwind CSS cho website Trung bay Hoc lieu so",
+  "scripts": {
+    "build": "tailwindcss -i ./static/src/input.css -o ./static/dist/output.css --minify",
+    "watch": "tailwindcss -i ./static/src/input.css -o ./static/dist/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.13"
+  }
+}

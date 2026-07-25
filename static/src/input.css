@@ -1,0 +1,62 @@
+/* ==========================================================================
+   Website Trưng bày Học liệu số — Tailwind entry point
+   Build: npx tailwindcss -i ./static/src/input.css -o ./static/dist/output.css
+   ========================================================================== */
+
+/* Font theo DESIGN.md: Literata (heading) + Hanken Grotesk (body) */
+@import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;0,7..72,700;1,7..72,400&family=Hanken+Grotesk:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background text-primary font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-primary;
+  }
+
+  /* Material Symbols Outlined — font đã load qua <link> trong base.html,
+     nhưng phải có rule này thì trình duyệt mới áp dụng đúng font-family
+     (nếu không, tên icon sẽ hiện ra chữ thường thay vì icon thật).
+     Dùng từ Task 3.7 (_gallery.html) và Task 3.8 (about.html) trở đi. */
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0;
+  }
+}
+
+@layer components {
+  /* Card mặc định: nền surface-container-lowest, bo góc xl (1.5rem) theo token */
+  .card {
+    @apply bg-surface-container-lowest rounded-xl shadow-sm;
+  }
+
+  /* Nút pill dùng cho nav "Bắt đầu" và các CTA khác */
+  .btn-pill {
+    @apply inline-flex items-center justify-center rounded-full bg-primary text-white
+           px-6 py-3 font-sans font-medium transition-colors hover:bg-secondary;
+  }
+
+  /* Padding chuẩn cho 1 section trang (section-padding: 8rem) */
+  .section-padding {
+    @apply py-section;
+  }
+}

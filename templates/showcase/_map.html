@@ -1,0 +1,93 @@
+{% comment %}
+  Section "Bản đồ số" (Task 3.6) — 3 kiểu: embed / image / geojson.
+  Include vào lesson_detail.html (block lesson_sections).
+
+  Field dùng (khớp showcase/models.py — DigitalMap, MapMarker):
+    lesson.maps.all -> mỗi map: map.title, map.map_type ('embed'|'image'|'geojson'),
+      map.embed_url, map.image.url, map.geojson_file.url, map.markers.all
+        marker.label, marker.lat, marker.lng, marker.note
+
+  - map_type = embed   -> nhúng iframe embed_url.
+  - map_type = image   -> ảnh tĩnh, click phóng to (lightbox), JS inline nhỏ
+                          (không cần file JS riêng).
+  - map_type = geojson -> dùng Leaflet.js (CDN) load geojson_file, vẽ marker
+                          từ map.markers.all (lat/lng/label/note) dạng popup.
+                          Leaflet CDN chỉ được nhúng khi có ít nhất 1 map
+                          kiểu geojson trong lesson, tránh tải thừa cho các
+                          bài học không dùng geojson.
+{% endcomment %}
+{% load static map_extras %}
+
+{% with map_list=lesson.maps.all %}
+{% if map_list %}
+<section id="ban-do-so" class="mb-stack-lg">
+  <h2 class="font-headline-lg-mobile text-xl md:text-headline-lg text-primary mb-stack-md">
+    Bản đồ số
+  </h2>
+
+  <div class="flex flex-col gap-8">
+    {% for map in map_list %}
+      <div class="rounded-xl bg-surface-container-lowest shadow-[0_16px_40px_rgba(0,45,55,0.10)] overflow-hidden">
+        {% if map.title %}
+          <div class="px-6 pt-6">
+            <h3 class="font-body-lg text-body-lg text-on-surface mb-stack-sm">{{ map.title }}</h3>
+          </div>
+        {% endif %}
+
+        {% if map.map_type == 'embed' and map.embed_url %}
+          <div class="relative w-full aspect-video">
+            <iframe src="{{ map.embed_url }}"
+                    title="{{ map.title|default:'Bản đồ số' }}"
+                    class="absolute inset-0 w-full h-full border-0"
+                    loading="lazy" allowfullscreen></iframe>
+          </div>
+
+        {% elif map.map_type == 'image' and map.image %}
+          <div class="p-6">
+            <button type="button"
+                    class="block w-full rounded-lg overflow-hidden cursor-zoom-in group"
+                    onclick="document.getElementById('map-lightbox-{{ map.id }}').classList.remove('hidden')">
+              <img src="{{ map.image.url }}" alt="{{ map.title|default:'Bản đồ số' }}"
+                   class="w-full h-auto max-h-[480px] object-cover transition-transform duration-300 group-hover:scale-[1.02]">
+            </button>
+          </div>
+          <div id="map-lightbox-{{ map.id }}"
+               class="hidden fixed inset-0 z-[60] bg-tertiary/90 backdrop-blur-sm flex items-center justify-center p-6"
+               onclick="this.classList.add('hidden')">
+            <img src="{{ map.image.url }}" alt="{{ map.title|default:'Bản đồ số' }}"
+                 class="max-w-[90vw] max-h-[85vh] object-contain rounded-xl"
+                 onclick="event.stopPropagation()">
+            <button type="button"
+                    class="absolute top-6 right-6 text-inverse-on-surface text-3xl leading-none hover:opacity-70"
+                    onclick="document.getElementById('map-lightbox-{{ map.id }}').classList.add('hidden')"
+                    aria-label="Đóng">&times;</button>
+          </div>
+
+        {% elif map.map_type == 'geojson' and map.geojson_file %}
+          <div class="p-6">
+            <div id="map-leaflet-{{ map.id }}"
+                 class="digital-map-leaflet w-full h-[420px] rounded-lg overflow-hidden bg-surface-container"
+                 data-geojson-url="{{ map.geojson_file.url }}"></div>
+          </div>
+          <script type="application/json" id="map-markers-{{ map.id }}">
+            [
+              {% for marker in map.markers.all %}
+              {"lat": {{ marker.lat }}, "lng": {{ marker.lng }}, "label": "{{ marker.label|escapejs }}", "note": "{{ marker.note|escapejs }}"}{% if not forloop.last %},{% endif %}
+              {% endfor %}
+            ]
+          </script>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% if map_list|has_geojson_map %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="{% static 'js/digital_map.js' %}" defer></script>
+{% endif %}
+{% endif %}
+{% endwith %}

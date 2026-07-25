@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Học Liệu Số — Hành trình Di sản{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Website trưng bày học liệu số — hành trình khám phá di sản văn hóa qua video, phiếu học tập, bản đồ số và thư viện ảnh.{% endblock %}">
+
+  {# Font theo DESIGN.md: Literata (heading) + Hanken Grotesk (body) #}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Literata:wght@400;500;600;700&display=swap" rel="stylesheet">
+  {# Material Symbols — dùng cho icon ở các section sau (Task 3.x) #}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'dist/output.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container flex flex-col min-h-screen">
+
+  {% include "partials/navbar.html" %}
+
+  <main class="flex-grow pt-24 md:pt-28">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "partials/footer.html" %}
+
+  {% block extra_body %}{% endblock %}
+</body>
+</html>

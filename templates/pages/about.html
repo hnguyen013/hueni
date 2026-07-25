@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% comment %}
+  Trang Giới thiệu (Task 3.8) — dựng theo screen.png + code.html (Stitch),
+  gần như pixel-perfect: Hero -> Tầm nhìn/Sứ mệnh -> Giá trị cốt lõi -> Đội ngũ.
+
+  Field dùng (khớp pages/models.py — SiteContent dùng chung nhiều section,
+  TeamMember riêng):
+    hero          -> SiteContent (section='about_hero'), 1 bản ghi
+                     hero.title, hero.body, hero.image.url
+    vision        -> SiteContent (section='about_vision'), 1 bản ghi
+                     vision.icon (tên Material Symbol, vd 'visibility'), vision.title, vision.body
+    mission       -> SiteContent (section='about_mission'), 1 bản ghi
+                     mission.icon (vd 'explore'), mission.title, mission.body
+    core_values   -> SiteContent.objects.filter(section='about_value').order_by('order')
+                     value.icon, value.title, value.body — vòng lặp bao nhiêu bản ghi
+                     cũng được, grid tự chia 3 cột ở desktop
+    team_members  -> TeamMember.objects.filter(is_active=True).order_by('order')
+                     member.avatar.url, member.name, member.role
+
+  View thật (Task 4.2) chỉ cần truyền đúng 5 biến trên (hero/vision/mission
+  dùng .first() vì mỗi section chỉ 1 bản ghi, core_values/team_members là
+  queryset nhiều bản ghi) là template này chạy đúng ngay, không cần sửa gì.
+  Nếu 1 trong 3 biến hero/vision/mission là None (chưa nhập liệu qua admin),
+  template tự dùng text mặc định bằng filter |default để không vỡ giao diện.
+{% endcomment %}
+
+{% block title %}Giới thiệu — Học Liệu Số{% endblock %}
+{% block meta_description %}{{ hero.body|default:"Câu chuyện, tầm nhìn và đội ngũ đứng sau Học Liệu Số." }}{% endblock %}
+
+{% block content %}
+
+{# ============================== Hero ============================== #}
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-section-padding text-center pt-stack-lg pb-section-padding">
+  <h1 class="font-display-lg text-4xl md:text-display-lg text-primary mb-stack-sm">
+    {{ hero.title|default:"Câu chuyện của chúng tôi" }}
+  </h1>
+  <p class="font-quote text-quote text-on-surface-variant max-w-3xl mx-auto mb-stack-lg">
+    {{ hero.body|default:"Kết nối quá khứ với tương lai thông qua không gian số. Chúng tôi tin rằng di sản không chỉ nằm trong bảo tàng, mà phải được sống và thở trong từng tương tác học tập của thế hệ mới." }}
+  </p>
+
+  {% if hero.image %}
+    <div class="w-full h-[320px] md:h-[500px] rounded-xl overflow-hidden shadow-[0_20px_40px_rgba(0,45,55,0.08)] relative">
+      <img class="w-full h-full object-cover" src="{{ hero.image.url }}" alt="{{ hero.title|default:'Câu chuyện của chúng tôi' }}">
+    </div>
+  {% endif %}
+</section>
+
+{# ======================= Tầm nhìn & Sứ mệnh ======================= #}
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-section-padding py-section-padding relative">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+
+    <div class="bg-surface-container-lowest/70 backdrop-blur-md border border-[rgba(139,168,142,0.2)]
+                p-stack-lg rounded-xl flex flex-col justify-center
+                transform hover:-translate-y-1 transition-transform duration-500
+                shadow-[0_8px_30px_rgba(0,45,55,0.04)]">
+      <span class="material-symbols-outlined text-4xl text-primary mb-stack-sm">{{ vision.icon|default:"visibility" }}</span>
+      <h2 class="font-headline-lg text-headline-lg text-primary mb-stack-sm">{{ vision.title|default:"Tầm nhìn" }}</h2>
+      <p class="font-body-lg text-body-lg text-on-surface-variant">
+        {{ vision.body|default:"Trở thành nền tảng giáo dục số hàng đầu, nơi di sản văn hóa Việt Nam được tái hiện sống động, dễ dàng tiếp cận và truyền cảm hứng cho mọi thế hệ người học trên toàn cầu." }}
+      </p>
+    </div>
+
+    <div class="bg-surface-container-lowest/70 backdrop-blur-md border border-[rgba(139,168,142,0.2)]
+                p-stack-lg rounded-xl flex flex-col justify-center
+                transform hover:-translate-y-1 transition-transform duration-500
+                shadow-[0_8px_30px_rgba(0,45,55,0.04)]">
+      <span class="material-symbols-outlined text-4xl text-secondary mb-stack-sm">{{ mission.icon|default:"explore" }}</span>
+      <h2 class="font-headline-lg text-headline-lg text-primary mb-stack-sm">{{ mission.title|default:"Sứ mệnh" }}</h2>
+      <p class="font-body-lg text-body-lg text-on-surface-variant">
+        {{ mission.body|default:"Xây dựng hệ sinh thái học liệu số chất lượng cao, kết hợp công nghệ hiện đại với chuyên môn học thuật sâu sắc, mang đến trải nghiệm khám phá lịch sử đa chiều và lôi cuốn." }}
+      </p>
+    </div>
+
+  </div>
+</section>
+
+{# ============================ Giá trị cốt lõi ============================ #}
+{% if core_values %}
+<section class="bg-surface-container-low py-section-padding">
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-section-padding">
+    <h2 class="font-display-md text-3xl md:text-display-md text-center text-primary mb-stack-lg">Giá trị cốt lõi</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+      {% for value in core_values %}
+        <div class="bg-surface-container-lowest p-stack-md rounded-xl
+                    shadow-[0_10px_30px_rgba(0,45,55,0.04)] hover:shadow-[0_15px_40px_rgba(0,45,55,0.08)]
+                    transition-all duration-300">
+          <div class="w-12 h-12 rounded-full {% cycle 'bg-primary-fixed' 'bg-secondary-fixed' 'bg-error-container' %} flex items-center justify-center mb-stack-sm">
+            <span class="material-symbols-outlined {% cycle 'text-primary' 'text-secondary' 'text-on-error-container' %}">{{ value.icon|default:"star" }}</span>
+          </div>
+          <h3 class="font-headline-lg-mobile text-xl md:text-headline-lg text-primary mb-2">{{ value.title }}</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant">{{ value.body }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ============================ Đội ngũ sáng lập ============================ #}
+{% if team_members %}
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-section-padding py-section-padding">
+  <h2 class="font-display-md text-3xl md:text-display-md text-center text-primary mb-stack-sm">Đội ngũ sáng lập</h2>
+  <p class="font-body-lg text-body-lg text-center text-on-surface-variant max-w-2xl mx-auto mb-stack-lg">
+    Những người đam mê công nghệ và văn hóa, đồng hành cùng nhau trên hành trình số hóa di sản.
+  </p>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-gutter">
+    {% for member in team_members %}
+      <div class="text-center group">
+        <div class="w-28 h-28 md:w-48 md:h-48 mx-auto rounded-full overflow-hidden bg-surface-container mb-4
+                    shadow-[0_10px_20px_rgba(0,45,55,0.05)]
+                    group-hover:scale-105 transition-transform duration-300
+                    border-2 border-transparent group-hover:border-primary-fixed-dim">
+          {% if member.avatar %}
+            <img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                 src="{{ member.avatar.url }}" alt="{{ member.name }}">
+          {% endif %}
+        </div>
+        <h4 class="font-headline-lg-mobile text-base md:text-headline-lg-mobile text-primary">{{ member.name }}</h4>
+        {% if member.role %}
+          <p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mt-1">{{ member.role }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

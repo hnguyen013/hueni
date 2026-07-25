@@ -1,0 +1,78 @@
+{% load static %}
+{% comment %}
+  Global Nav — thanh điều hướng cố định trên đầu trang.
+  Field/route dùng trong partial này:
+    - timeline:home    -> route thật (Task 4.1)
+    - pages:about      -> route thật (Task 4.2) = /gioi-thieu/
+    - pages:contact    -> route thật (Task 4.2) = /lien-he/
+  Cả 3 route đã đăng ký thật, dùng {% url %} bình thường (không còn href
+  tĩnh nữa — trước Task 4.2, 2 route pages dùng href tĩnh vì chưa tồn tại).
+{% endcomment %}
+<nav class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-md">
+  <div class="max-w-container-max mx-auto flex items-center justify-between px-margin-mobile md:px-section-padding py-4">
+    <a href="{% url 'timeline:home' %}"
+       class="font-display-md text-2xl md:text-display-md text-primary tracking-tight">
+      Học Liệu Số
+    </a>
+
+    <div class="hidden md:flex items-center gap-8">
+      <a href="{% url 'timeline:home' %}"
+         class="font-label-md text-label-md uppercase tracking-wider transition-all duration-300 hover:text-primary hover:opacity-80
+                {% if request.resolver_match.app_name == 'timeline' %}text-primary border-b-2 border-primary pb-1{% else %}text-on-surface-variant{% endif %}">
+        Hành trình
+      </a>
+      <a href="{% url 'pages:about' %}"
+         class="font-label-md text-label-md uppercase tracking-wider transition-all duration-300 hover:text-primary hover:opacity-80
+                {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'about' %}text-primary border-b-2 border-primary pb-1{% else %}text-on-surface-variant{% endif %}">
+        Giới thiệu
+      </a>
+      <a href="{% url 'pages:contact' %}"
+         class="font-label-md text-label-md uppercase tracking-wider transition-all duration-300 hover:text-primary hover:opacity-80
+                {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'contact' %}text-primary border-b-2 border-primary pb-1{% else %}text-on-surface-variant{% endif %}">
+        Liên hệ
+      </a>
+    </div>
+
+    <a href="{% url 'timeline:home' %}"
+       class="hidden md:inline-flex font-label-md text-label-md uppercase tracking-wider bg-primary text-on-primary px-6 py-2 rounded-full hover:opacity-80 transition-all duration-300">
+      Bắt đầu
+    </a>
+
+    {# ---- Nút hamburger — chỉ hiện dưới breakpoint md (Task 5.2) ---- #}
+    <button type="button" id="nav-toggle"
+            class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full text-primary hover:bg-surface-container-high transition-colors"
+            aria-label="Mở menu" aria-expanded="false" aria-controls="mobile-menu">
+      <span class="material-symbols-outlined text-3xl" aria-hidden="true">menu</span>
+    </button>
+  </div>
+
+  {% comment %}
+  Panel menu mobile — mặc định ẩn (pattern hidden+flex, xem TAILWIND_README).
+  Luôn ẩn ở md trở lên (đã có menu ngang phía trên); dưới md, JS gỡ 'hidden'
+  để hiện dạng cột (flex flex-col).
+  {% endcomment %}
+  <div id="mobile-menu"
+       class="hidden md:hidden flex flex-col gap-1 px-margin-mobile pb-6 bg-surface/95 backdrop-blur-md border-t border-outline-variant/40">
+    <a href="{% url 'timeline:home' %}"
+       class="font-label-md text-label-md uppercase tracking-wider py-3 border-b border-outline-variant/20
+              {% if request.resolver_match.app_name == 'timeline' %}text-primary{% else %}text-on-surface-variant{% endif %}">
+      Hành trình
+    </a>
+    <a href="{% url 'pages:about' %}"
+       class="font-label-md text-label-md uppercase tracking-wider py-3 border-b border-outline-variant/20
+              {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'about' %}text-primary{% else %}text-on-surface-variant{% endif %}">
+      Giới thiệu
+    </a>
+    <a href="{% url 'pages:contact' %}"
+       class="font-label-md text-label-md uppercase tracking-wider py-3
+              {% if request.resolver_match.app_name == 'pages' and request.resolver_match.url_name == 'contact' %}text-primary{% else %}text-on-surface-variant{% endif %}">
+      Liên hệ
+    </a>
+    <a href="{% url 'timeline:home' %}"
+       class="font-label-md text-label-md uppercase tracking-wider bg-primary text-on-primary px-6 py-3 rounded-full text-center mt-2 hover:opacity-80 transition-all duration-300">
+      Bắt đầu
+    </a>
+  </div>
+</nav>
+
+<script src="{% static 'js/navbar.js' %}" defer></script>

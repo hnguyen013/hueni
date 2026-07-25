@@ -1,0 +1,66 @@
+{% comment %}
+  Section "Phiếu học tập" (Task 3.4) — include vào lesson_detail.html
+  (block lesson_sections), ngay sau section Video.
+
+  Field dùng trong partial này (khớp showcase/models.py — Worksheet):
+    lesson.worksheets.all -> mỗi worksheet có:
+      worksheet.title
+      worksheet.preview_image.url (có thể rỗng, blank=True/null=True)
+      worksheet.file.url
+
+  Không cần bọc {% if lesson.worksheets.all %} bên ngoài để tránh query kép;
+  {% for %} rỗng tự không render gì nếu lesson chưa có worksheet nào.
+{% endcomment %}
+{% load static %}
+
+{% with worksheet_list=lesson.worksheets.all %}
+{% if worksheet_list %}
+<section id="phieu-hoc-tap" class="mb-stack-lg">
+  <h2 class="font-headline-lg-mobile text-xl md:text-headline-lg text-primary mb-stack-sm">
+    Phiếu học tập
+  </h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for worksheet in worksheet_list %}
+      <div class="group flex flex-col rounded-xl overflow-hidden bg-surface-container-lowest shadow-[0_16px_40px_rgba(0,45,55,0.10)] transition-transform duration-300 hover:-translate-y-1">
+
+        {# ---- Ảnh xem trước ---- #}
+        <div class="aspect-[4/3] w-full overflow-hidden bg-surface-container">
+          {% if worksheet.preview_image %}
+            <img src="{{ worksheet.preview_image.url }}"
+                 alt="{{ worksheet.title }}"
+                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center text-on-surface-variant">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.5" class="w-12 h-12">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 12h6m-6 4h6M9 8h1M6 3.75h12A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75Z" />
+              </svg>
+            </div>
+          {% endif %}
+        </div>
+
+        {# ---- Nội dung ---- #}
+        <div class="flex flex-col flex-1 p-6">
+          <h3 class="font-body-lg text-body-lg text-on-surface mb-stack-sm">
+            {{ worksheet.title }}
+          </h3>
+
+          <a href="{{ worksheet.file.url }}"
+             download
+             class="mt-auto inline-flex items-center justify-center gap-2 font-label-md text-label-md uppercase tracking-wider bg-primary text-on-primary rounded-full px-6 py-3 hover:opacity-80 transition-all duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.5" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M7.5 11.25 12 15.75m0 0 4.5-4.5M12 15.75V3" />
+            </svg>
+            Tải phiếu học tập
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endwith %}

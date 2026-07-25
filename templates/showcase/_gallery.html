@@ -1,0 +1,89 @@
+{% comment %}
+  Section "Bộ hình ảnh" (Task 3.7) — grid ảnh + lightbox tương tác bằng JS
+  thuần (không dùng thư viện ngoài). Include vào lesson_detail.html
+  (block lesson_sections), sau section Bản đồ số.
+
+  Field dùng (khớp showcase/models.py — Gallery/GalleryImage):
+    lesson.galleries.all -> mỗi gallery có:
+      gallery.title (có thể rỗng)
+      gallery.images.all -> mỗi image có:
+        image.image.url
+        image.caption (có thể rỗng)
+
+  Cơ chế: mỗi gallery là 1 khối grid độc lập (data-gallery-root), bấm vào 1
+  ảnh mở lightbox dùng chung cho cả trang, điều hướng ảnh trước/sau chỉ chạy
+  trong phạm vi gallery vừa mở (JS: static/js/gallery_lightbox.js, tự chứa,
+  không phụ thuộc section Bản đồ số/Bộ câu hỏi khác).
+{% endcomment %}
+{% load static %}
+
+{% with gallery_list=lesson.galleries.all %}
+{% if gallery_list %}
+<section id="bo-hinh-anh" class="mb-stack-lg">
+  <h2 class="font-headline-lg-mobile text-xl md:text-headline-lg text-primary mb-stack-md">
+    Bộ hình ảnh
+  </h2>
+
+  <div class="flex flex-col gap-8">
+    {% for gallery in gallery_list %}
+      {% with image_list=gallery.images.all %}
+      {% if image_list %}
+        <div data-gallery-root>
+          {% if gallery.title %}
+            <h3 class="font-body-lg text-body-lg text-on-surface mb-stack-sm">{{ gallery.title }}</h3>
+          {% endif %}
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {% for image in image_list %}
+              <button type="button"
+                      class="gallery-thumb group relative aspect-square rounded-lg overflow-hidden bg-surface-container shadow-[0_8px_20px_rgba(0,45,55,0.06)]"
+                      data-src="{{ image.image.url }}"
+                      data-caption="{{ image.caption|default:'' }}"
+                      aria-label="Xem lớn: {{ image.caption|default:gallery.title }}">
+                <img src="{{ image.image.url }}" alt="{{ image.caption|default:gallery.title }}"
+                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-0 flex items-center justify-center bg-tertiary/0 group-hover:bg-tertiary/30 transition-colors duration-300">
+                  <span class="material-symbols-outlined text-inverse-on-surface text-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    zoom_in
+                  </span>
+                </span>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+      {% endwith %}
+    {% endfor %}
+  </div>
+</section>
+
+{# ---- Lightbox dùng chung cho mọi gallery trong trang (ẩn mặc định) ---- #}
+<div class="hidden fixed inset-0 z-[70] bg-tertiary/90 backdrop-blur-sm flex items-center justify-center p-6"
+     data-gallery-lightbox>
+  <button type="button"
+          class="absolute top-6 right-6 text-inverse-on-surface hover:opacity-70 transition-opacity"
+          data-gallery-close aria-label="Đóng">
+    <span class="material-symbols-outlined text-3xl">close</span>
+  </button>
+
+  <button type="button"
+          class="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 text-inverse-on-surface hover:opacity-70 transition-opacity"
+          data-gallery-prev aria-label="Ảnh trước">
+    <span class="material-symbols-outlined text-4xl md:text-5xl">chevron_left</span>
+  </button>
+
+  <div class="max-w-[90vw] max-h-[85vh] flex flex-col items-center gap-stack-sm">
+    <img src="" alt="" class="max-w-full max-h-[75vh] object-contain rounded-xl" data-gallery-image>
+    <p class="font-body-md text-body-md text-inverse-on-surface text-center" data-gallery-caption></p>
+  </div>
+
+  <button type="button"
+          class="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 text-inverse-on-surface hover:opacity-70 transition-opacity"
+          data-gallery-next aria-label="Ảnh sau">
+    <span class="material-symbols-outlined text-4xl md:text-5xl">chevron_right</span>
+  </button>
+</div>
+
+<script src="{% static 'js/gallery_lightbox.js' %}" defer></script>
+{% endif %}
+{% endwith %}

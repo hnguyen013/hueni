@@ -1,0 +1,48 @@
+# Render Blueprint — Task 5.3
+#
+# Cách dùng: đẩy code lên GitHub, vào https://dashboard.render.com/blueprints
+# -> "New Blueprint Instance" -> chọn repo này. Render tự đọc file này để
+# tạo 1 Web Service + 1 Postgres database, tự nối DATABASE_URL, tự sinh
+# SECRET_KEY. Chi tiết từng bước: xem DEPLOY.md.
+
+databases:
+  - name: hoclieuso-db
+    plan: free
+    databaseName: hoclieuso
+    user: hoclieuso
+
+services:
+  - type: web
+    name: hoclieuso
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      npm install &&
+      npm run build &&
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate --noinput
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      # Render tự thay ${RENDER_EXTERNAL_HOSTNAME} bằng domain thật lúc chạy
+      # (vd hoclieuso.onrender.com) — không cần tự điền tay.
+      - key: DJANGO_ALLOWED_HOSTS
+        fromService:
+          type: web
+          name: hoclieuso
+          property: host
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: "https://hoclieuso.onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hoclieuso-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: "3.12.3"
+      - key: USE_S3_MEDIA
+        value: "False"

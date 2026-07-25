@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% comment %}
+  Trang Liên hệ (Task 3.9). Không có ảnh thiết kế tham chiếu riêng (khác
+  Task 3.8) — dùng lại đúng token màu/typography/spacing từ DESIGN.md và
+  pattern layout đã thống nhất ở các trang trước (card bo góc rounded-xl,
+  shadow teal mềm, icon Material Symbols, {% cycle %} xen kẽ màu).
+
+  Field dùng (khớp pages/models.py — SiteContent):
+    contact_info -> SiteContent.objects.filter(section='contact_info').order_by('order')
+      mỗi item: item.icon (tên Material Symbol, vd 'mail', 'call', 'share'),
+                item.title (vd 'Email', 'Điện thoại', 'Mạng xã hội'),
+                item.body (nội dung hiển thị, vd địa chỉ email/số điện thoại)
+  Nếu context không truyền contact_info hoặc rỗng, nhánh {% empty %} tự hiện
+  3 mục mẫu (Email/Điện thoại/Mạng xã hội) để trang không bao giờ trống,
+  Task 4.2 rảnh tay không cần lo trường hợp admin chưa nhập liệu.
+
+  Form liên hệ là form TĨNH đúng theo yêu cầu task (chưa xử lý submit):
+  action="" method="post", không có view nào xử lý ở bước này.
+  {% csrf_token %} vẫn được thêm sẵn (không ảnh hưởng gì khi chưa có view
+  xử lý) để nếu sau này có ai nối backend xử lý POST thật thì không bị quên
+  — nhưng bản thân Task 3.9 không xử lý submit.
+{% endcomment %}
+
+{% block title %}Liên hệ — Học Liệu Số{% endblock %}
+{% block meta_description %}Thông tin liên hệ và kết nối với đội ngũ Học Liệu Số.{% endblock %}
+
+{% block content %}
+
+{# ============================== Hero ============================== #}
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-section-padding text-center pt-stack-lg pb-stack-lg">
+  <span class="font-label-md text-label-md uppercase tracking-wider text-secondary">Kết nối</span>
+  <h1 class="font-display-lg text-4xl md:text-display-lg text-primary mt-stack-sm mb-stack-sm">Liên hệ với chúng tôi</h1>
+  <p class="font-quote text-quote text-on-surface-variant max-w-2xl mx-auto">
+    Có câu hỏi, góp ý hay muốn hợp tác? Chúng tôi luôn sẵn sàng lắng nghe.
+  </p>
+</section>
+
+{# ==================== Thông tin liên hệ + Form ==================== #}
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-section-padding pb-section-padding">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-gutter items-start">
+
+    {# ---- Thông tin liên hệ ---- #}
+    <div class="md:col-span-2 flex flex-col gap-6">
+      {% for item in contact_info %}
+        <div class="flex items-start gap-4 bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(0,45,55,0.04)]">
+          <div class="w-12 h-12 flex-shrink-0 rounded-full {% cycle 'bg-primary-fixed' 'bg-secondary-fixed' 'bg-error-container' %} flex items-center justify-center">
+            <span class="material-symbols-outlined {% cycle 'text-primary' 'text-secondary' 'text-on-error-container' %}">{{ item.icon|default:"info" }}</span>
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-headline-lg-mobile text-lg text-primary">{{ item.title }}</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant mt-1 break-words">{{ item.body }}</p>
+          </div>
+        </div>
+      {% empty %}
+        <div class="flex items-start gap-4 bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(0,45,55,0.04)]">
+          <div class="w-12 h-12 flex-shrink-0 rounded-full bg-primary-fixed flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary">mail</span>
+          </div>
+          <div>
+            <h3 class="font-headline-lg-mobile text-lg text-primary">Email</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant mt-1">contact@hoclieuso.vn</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(0,45,55,0.04)]">
+          <div class="w-12 h-12 flex-shrink-0 rounded-full bg-secondary-fixed flex items-center justify-center">
+            <span class="material-symbols-outlined text-secondary">call</span>
+          </div>
+          <div>
+            <h3 class="font-headline-lg-mobile text-lg text-primary">Điện thoại</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant mt-1">1900 000 000</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(0,45,55,0.04)]">
+          <div class="w-12 h-12 flex-shrink-0 rounded-full bg-error-container flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-error-container">share</span>
+          </div>
+          <div>
+            <h3 class="font-headline-lg-mobile text-lg text-primary">Mạng xã hội</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant mt-1">@hoclieuso</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {# ---- Form liên hệ (tĩnh — chưa xử lý submit) ---- #}
+    <div class="md:col-span-3 bg-surface-container-lowest rounded-xl p-6 md:p-10 shadow-[0_16px_40px_rgba(0,45,55,0.08)]">
+      <form action="" method="post" class="flex flex-col gap-5">
+        {% csrf_token %}
+        <div>
+          <label for="contact-name" class="block font-label-md text-label-md uppercase tracking-wider text-on-surface-variant mb-2">
+            Họ và tên
+          </label>
+          <input type="text" id="contact-name" name="name"
+                 class="w-full rounded-lg border border-outline-variant bg-surface px-4 py-3 font-body-md text-body-md text-on-surface
+                        focus:outline-none focus:ring-2 focus:ring-primary"
+                 placeholder="Nguyễn Văn A">
+        </div>
+
+        <div>
+          <label for="contact-email" class="block font-label-md text-label-md uppercase tracking-wider text-on-surface-variant mb-2">
+            Email
+          </label>
+          <input type="email" id="contact-email" name="email"
+                 class="w-full rounded-lg border border-outline-variant bg-surface px-4 py-3 font-body-md text-body-md text-on-surface
+                        focus:outline-none focus:ring-2 focus:ring-primary"
+                 placeholder="ban@email.com">
+        </div>
+
+        <div>
+          <label for="contact-message" class="block font-label-md text-label-md uppercase tracking-wider text-on-surface-variant mb-2">
+            Nội dung
+          </label>
+          <textarea id="contact-message" name="message" rows="5"
+                    class="w-full rounded-lg border border-outline-variant bg-surface px-4 py-3 font-body-md text-body-md text-on-surface
+                           focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                    placeholder="Bạn muốn trao đổi điều gì?"></textarea>
+        </div>
+
+        <button type="submit"
+                class="self-start font-label-md text-label-md uppercase tracking-wider bg-primary text-on-primary px-8 py-3 rounded-full
+                       hover:opacity-80 transition-all duration-300">
+          Gửi liên hệ
+        </button>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

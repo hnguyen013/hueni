@@ -1,0 +1,42 @@
+{% comment %}
+  Footer — 3 khối: (1) logo + bản quyền, (2) liên kết trang, (3) liên kết phụ.
+  Cột (1) chiếm 2/4 trên grid 4 cột ở desktop để cân đối với 2 cột link còn lại.
+{% endcomment %}
+<footer class="w-full bg-surface-container-low mt-stack-lg">
+  <div class="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-section-padding py-stack-lg">
+
+    <div class="col-span-1 md:col-span-2">
+      <div class="font-headline-lg text-headline-lg text-primary mb-stack-sm">Học Liệu Số</div>
+      <p class="font-body-md text-body-md text-on-surface-variant max-w-sm">
+        © {% now "Y" %} Học Liệu Số. Hành trình Di sản &amp; Giáo dục số.
+      </p>
+    </div>
+
+    <div class="col-span-1 flex flex-col gap-2">
+      <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface mb-1">Khám phá</span>
+      <a href="{% url 'timeline:home' %}"
+         class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:opacity-100 hover:text-primary transition-colors focus:underline">
+        Hành trình
+      </a>
+      <a href="{% url 'pages:about' %}"
+         class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:opacity-100 hover:text-primary transition-colors focus:underline">
+        Giới thiệu
+      </a>
+      <a href="{% url 'pages:contact' %}"
+         class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:opacity-100 hover:text-primary transition-colors focus:underline">
+        Liên hệ
+      </a>
+    </div>
+
+    <div class="col-span-1 flex flex-col gap-2">
+      <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface mb-1">Khác</span>
+      <a href="#" class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:opacity-100 hover:text-primary transition-colors focus:underline">
+        Chính sách
+      </a>
+      <a href="#" class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:opacity-100 hover:text-primary transition-colors focus:underline">
+        Hỗ trợ
+      </a>
+    </div>
+
+  </div>
+</footer>

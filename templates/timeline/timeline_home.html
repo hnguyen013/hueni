@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% comment %}
+  Trang chủ / Hành trình (Task 3.2).
+  Field dùng trong template này khớp đúng timeline/models.py (Task 2.1):
+    era.name, era.year_label, era.description
+    era.lessons.all -> queryset Lesson (related_name='lessons')
+    lesson.title, lesson.year_label, lesson.summary, lesson.cover_image.url
+    lesson.get_absolute_url -> '/bai-hoc/<slug>/'
+  View thật (Task 4.1) chỉ cần truyền context {'eras': Era.objects.prefetch_related('lessons')}
+  là template này chạy đúng ngay, không cần sửa gì thêm.
+{% endcomment %}
+
+{% block title %}Hành trình — Học Liệu Số{% endblock %}
+
+{% block content %}
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-section-padding pt-stack-lg pb-section-padding">
+  <header class="text-center max-w-2xl mx-auto mb-stack-lg">
+    <span class="font-label-md text-label-md uppercase tracking-wider text-secondary">Hành trình di sản</span>
+    <h1 class="font-display-md text-3xl md:text-display-md text-primary mt-stack-sm">Dòng thời gian học liệu số</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant mt-stack-sm">
+      Lần theo từng giai đoạn lịch sử, khám phá các bài học được số hóa từ hiện vật, video, bản đồ và tư liệu gốc.
+    </p>
+  </header>
+
+  {% for era in eras %}
+    <div class="era-block {% if not forloop.first %}mt-stack-lg{% endif %}">
+
+      {# ---- Khối tiêu đề Era ---- #}
+      <div class="mb-stack-md">
+        {% if era.year_label %}
+          <span class="inline-block font-label-md text-label-md uppercase tracking-wider text-on-primary bg-primary rounded-full px-4 py-1 mb-2">
+            {{ era.year_label }}
+          </span>
+        {% endif %}
+        <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">{{ era.name }}</h2>
+        {% if era.description %}
+          <p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">{{ era.description }}</p>
+        {% endif %}
+      </div>
+
+      {# ---- Story Timeline: đường kẻ sage green + node tròn cho từng Lesson ---- #}
+      <ol class="relative border-l-2 border-secondary/30 ml-3 md:ml-6">
+        {% for lesson in era.lessons.all %}
+          <li class="relative pl-8 md:pl-10 pb-stack-md last:pb-0 group/node">
+            {# Node tròn nằm trên đường kẻ, phóng to + phát sáng nhẹ khi hover #}
+            <span class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-surface-container-lowest border-2 border-secondary
+                         transition-all duration-300 ease-out
+                         group-hover/node:scale-125 group-hover/node:border-primary
+                         group-hover/node:shadow-[0_0_0_6px_rgba(139,168,142,0.35)]"
+                  aria-hidden="true"></span>
+
+            <a href="{{ lesson.get_absolute_url }}"
+               class="flex flex-col md:flex-row gap-4 md:items-center bg-surface-container-lowest rounded-xl p-4 md:p-5
+                      shadow-[0_8px_24px_rgba(0,45,55,0.04)] border border-transparent
+                      transition-all duration-300 ease-out
+                      hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(0,45,55,0.08)] hover:border-secondary/40
+                      focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+
+              {% if lesson.cover_image %}
+                <img src="{{ lesson.cover_image.url }}"
+                     alt="{{ lesson.title }}"
+                     class="w-full md:w-40 h-32 md:h-24 object-cover rounded-lg flex-shrink-0">
+              {% endif %}
+
+              <div class="min-w-0">
+                {% if lesson.year_label %}
+                  <span class="font-label-md text-label-md uppercase tracking-wider text-secondary">{{ lesson.year_label }}</span>
+                {% endif %}
+                <h3 class="font-headline-lg-mobile text-xl text-primary mt-1 group-hover/node:text-primary">
+                  {{ lesson.title }}
+                </h3>
+                {% if lesson.summary %}
+                  <p class="font-body-md text-body-md text-on-surface-variant mt-1 line-clamp-2">{{ lesson.summary }}</p>
+                {% endif %}
+              </div>
+            </a>
+          </li>
+        {% empty %}
+          <li class="pl-8 md:pl-10">
+            <p class="font-body-md text-body-md text-on-surface-variant italic">Giai đoạn này chưa có bài học nào.</p>
+          </li>
+        {% endfor %}
+      </ol>
+    </div>
+  {% empty %}
+    <div class="text-center py-stack-lg">
+      <p class="font-body-lg text-body-lg text-on-surface-variant">Chưa có dữ liệu hành trình. Vui lòng quay lại sau.</p>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

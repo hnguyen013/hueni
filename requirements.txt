@@ -1,0 +1,13 @@
+Django==6.0.7
+pillow==12.3.0
+
+# Task 5.3 — Deploy
+gunicorn==23.0.0
+whitenoise==6.8.2
+dj-database-url==2.3.0
+psycopg[binary]==3.2.3
+
+# Chỉ thật sự dùng khi bật USE_S3_MEDIA=True (xem config/settings.py +
+# DEPLOY.md); vẫn cài sẵn để khỏi phải deploy lại lúc cần bật S3.
+django-storages==1.14.4
+boto3==1.35.36
