@@ -2,19 +2,12 @@
 #
 # Cách dùng: đẩy code lên GitHub, vào https://dashboard.render.com/blueprints
 # -> "New Blueprint Instance" -> chọn repo này. Render tự đọc file này để
-# tạo 1 Web Service + 1 Postgres database, tự nối DATABASE_URL, tự sinh
-# SECRET_KEY. Chi tiết từng bước: xem DEPLOY.md.
-
-databases:
-  - name: hoclieuso-db
-    plan: free
-    databaseName: hoclieuso
-    user: hoclieuso
-    region: singapore  # BẮT BUỘC khớp region với web service bên dưới —
-    # internal DATABASE_URL của Render chỉ resolve được giữa các service
-    # CÙNG region. Thiếu dòng này, Render tự rơi database vào region mặc
-    # định (Oregon) trong khi web service ở Singapore → migrate lúc build
-    # báo lỗi DNS "Name or service not known" (đã gặp thực tế, xem log).
+# tạo 1 Web Service, tự sinh SECRET_KEY. Chi tiết từng bước: xem DEPLOY.md.
+#
+# LƯU Ý: KHÔNG dùng Postgres của Render nữa (free plan tự xoá DB sau 30
+# ngày — xem mục 9 DEPLOY.md). DATABASE_URL giờ trỏ sang Neon (free vĩnh
+# viễn), phải tự dán connection string vào Environment trên Dashboard
+# (không khai trong file này vì đây là bí mật, không nên commit lên Git).
 
 services:
   - type: web
@@ -27,23 +20,28 @@ services:
       npm install &&
       npm run build &&
       python manage.py collectstatic --noinput &&
-      python manage.py migrate --noinput
+      python manage.py migrate --noinput &&
+      (python manage.py createsuperuser --noinput || true)
     startCommand: gunicorn config.wsgi:application
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
         value: "False"
-      # Render tự thay ${RENDER_EXTERNAL_HOSTNAME} bằng domain thật lúc chạy
-      # (hueni.onrender.com) — không cần tự điền tay.
+      # Đặt cứng domain thật thay vì fromService (service tự tham chiếu
+      # chính nó qua fromService đôi khi không resolve đúng lúc env var
+      # được set — đã gặp lỗi 400 Bad Request / DisallowedHost thực tế do
+      # ALLOWED_HOSTS rỗng/sai). Nếu đổi tên service, nhớ sửa lại dòng này.
       - key: DJANGO_ALLOWED_HOSTS
         value: "hueni.onrender.com"
       - key: DJANGO_CSRF_TRUSTED_ORIGINS
         value: "https://hueni.onrender.com"
+      # KHÔNG dùng fromDatabase nữa (đã bỏ Postgres của Render). Dán
+      # connection string Neon vào đây trực tiếp trên Render Dashboard
+      # (Environment tab) — sync: false để Blueprint KHÔNG tự xoá/ghi đè
+      # giá trị bạn nhập tay mỗi lần sync lại từ file này.
       - key: DATABASE_URL
-        fromDatabase:
-          name: hoclieuso-db
-          property: connectionString
+        sync: false
       - key: PYTHON_VERSION
         value: "3.12.3"
       - key: USE_S3_MEDIA
