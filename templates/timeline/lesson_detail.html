@@ -2,29 +2,7 @@
 {% load static video_extras %}
 
 {% comment %}
-  Trang chi tiết bài học (Task 3.3) — mới làm khung layout chính + section Video.
-  Field dùng trong template này:
-    lesson.title, lesson.year_label, lesson.summary, lesson.cover_image.url
-    lesson.era.name (breadcrumb — era là FK trên Lesson, timeline/models.py)
-    lesson.video.video_url  -> showcase/models.py LessonVideo (OneToOne, related_name='video')
-    lesson.video.video_file.url
-  Lưu ý: lesson.video là quan hệ OneToOne ngược — nếu bài học chưa gán
-  LessonVideo, `lesson.video.video_url` sẽ tự resolve rỗng trong template
-  (Django set silent_variable_failure=True cho RelatedObjectDoesNotExist),
-  KHÔNG cần bọc thêm {% if lesson.video %} bên ngoài.
-
-  View thật (Task 4.1) chỉ cần truyền context {'lesson': lesson_instance}
-  (đã select_related/prefetch_related 'video', 'era') là chạy đúng ngay.
-
-  ---- Điểm nối cho Task 3.4/3.5/3.6/3.7 (song song, không phụ thuộc nhau) ----
-  Các section Phiếu học tập / Bộ câu hỏi / Bản đồ số / Bộ hình ảnh sẽ được
-  thêm vào NGAY SAU section Video, mỗi task include đúng 1 dòng của mình vào
-  {% block lesson_sections %} bên dưới, ví dụ:
-    {% include "showcase/_worksheets.html" %}
-    {% include "showcase/_quiz.html" %}
-    {% include "showcase/_map.html" %}
-    {% include "showcase/_gallery.html" %}
-  Không cần sửa gì khác trong file này.
+  Trang chi tiết bài học — cover_image_src ưu tiên URL ngoài.
 {% endcomment %}
 
 {% block title %}{{ lesson.title }} — Học Liệu Số{% endblock %}
@@ -64,9 +42,9 @@
   </header>
 
   {# ---- Ảnh bìa ---- #}
-  {% if lesson.cover_image %}
+  {% if lesson.cover_image_src %}
     <div class="rounded-xl overflow-hidden shadow-[0_16px_40px_rgba(0,45,55,0.10)] mb-stack-lg">
-      <img src="{{ lesson.cover_image.url }}" alt="{{ lesson.title }}" class="w-full h-auto max-h-[520px] object-cover">
+      <img src="{{ lesson.cover_image_src }}" alt="{{ lesson.title }}" class="w-full h-auto max-h-[520px] object-cover">
     </div>
   {% endif %}
 
@@ -101,7 +79,6 @@
     </section>
   {% endif %}
 
-  {# ---- Điểm nối cho Task 3.4 / 3.5 / 3.6 / 3.7 — xem ghi chú {% comment %} ở đầu file ---- #}
   {% block lesson_sections %}
     {% include "showcase/_worksheets.html" %}
     {% include "showcase/_quiz.html" %}

@@ -1,19 +1,5 @@
 {% comment %}
-  Section "Bộ hình ảnh" (Task 3.7) — grid ảnh + lightbox tương tác bằng JS
-  thuần (không dùng thư viện ngoài). Include vào lesson_detail.html
-  (block lesson_sections), sau section Bản đồ số.
-
-  Field dùng (khớp showcase/models.py — Gallery/GalleryImage):
-    lesson.galleries.all -> mỗi gallery có:
-      gallery.title (có thể rỗng)
-      gallery.images.all -> mỗi image có:
-        image.image.url
-        image.caption (có thể rỗng)
-
-  Cơ chế: mỗi gallery là 1 khối grid độc lập (data-gallery-root), bấm vào 1
-  ảnh mở lightbox dùng chung cho cả trang, điều hướng ảnh trước/sau chỉ chạy
-  trong phạm vi gallery vừa mở (JS: static/js/gallery_lightbox.js, tự chứa,
-  không phụ thuộc section Bản đồ số/Bộ câu hỏi khác).
+  Section "Bộ hình ảnh" — dùng image.image_src (URL ngoài ưu tiên).
 {% endcomment %}
 {% load static %}
 
@@ -35,12 +21,13 @@
 
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {% for image in image_list %}
+              {% if image.image_src %}
               <button type="button"
                       class="gallery-thumb group relative aspect-square rounded-lg overflow-hidden bg-surface-container shadow-[0_8px_20px_rgba(0,45,55,0.06)]"
-                      data-src="{{ image.image.url }}"
+                      data-src="{{ image.image_src }}"
                       data-caption="{{ image.caption|default:'' }}"
                       aria-label="Xem lớn: {{ image.caption|default:gallery.title }}">
-                <img src="{{ image.image.url }}" alt="{{ image.caption|default:gallery.title }}"
+                <img src="{{ image.image_src }}" alt="{{ image.caption|default:gallery.title }}"
                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy">
                 <span class="absolute inset-0 flex items-center justify-center bg-tertiary/0 group-hover:bg-tertiary/30 transition-colors duration-300">
                   <span class="material-symbols-outlined text-inverse-on-surface text-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -48,6 +35,7 @@
                   </span>
                 </span>
               </button>
+              {% endif %}
             {% endfor %}
           </div>
         </div>

@@ -8,17 +8,6 @@ from .models import (
 )
 
 
-# ---------------------------------------------------------------------------
-# Quiz: QuizShowcase -> QuizQuestion -> QuizChoice
-# Django admin không hỗ trợ inline lồng 2 cấp (inline-trong-inline) theo mặc
-# định, nên cách xử lý ở đây là:
-#   - Trang QuizShowcase: nhập nhanh danh sách QuizQuestion (Tabular),
-#     có "show_change_link" để bấm thẳng vào 1 câu hỏi.
-#   - Trang QuizQuestion (đăng ký riêng): nhập QuizChoice (Tabular) đầy đủ.
-# => Vẫn nhập được toàn bộ quiz chỉ trong 1-2 lần bấm, không cần rời khỏi
-#    khu vực quiz.
-# ---------------------------------------------------------------------------
-
 class QuizChoiceInline(admin.TabularInline):
     model = QuizChoice
     extra = 2
@@ -48,10 +37,6 @@ class QuizShowcaseAdmin(admin.ModelAdmin):
     inlines = [QuizQuestionInline]
 
 
-# ---------------------------------------------------------------------------
-# Digital Map: DigitalMap -> MapMarker (chỉ dùng khi map_type = 'geojson')
-# ---------------------------------------------------------------------------
-
 class MapMarkerInline(admin.TabularInline):
     model = MapMarker
     extra = 1
@@ -63,17 +48,14 @@ class DigitalMapAdmin(admin.ModelAdmin):
     list_display = ('title', 'lesson', 'map_type', 'order')
     list_filter = ('map_type', 'lesson')
     search_fields = ('title',)
+    fields = ('lesson', 'title', 'map_type', 'embed_url', 'image_url', 'image', 'geojson_file', 'order')
     inlines = [MapMarkerInline]
 
-
-# ---------------------------------------------------------------------------
-# Gallery: Gallery -> GalleryImage
-# ---------------------------------------------------------------------------
 
 class GalleryImageInline(admin.TabularInline):
     model = GalleryImage
     extra = 3
-    fields = ('image', 'caption', 'order')
+    fields = ('image_url', 'image', 'caption', 'order')
 
 
 @admin.register(Gallery)
@@ -83,12 +65,6 @@ class GalleryAdmin(admin.ModelAdmin):
     search_fields = ('title',)
     inlines = [GalleryImageInline]
 
-
-# ---------------------------------------------------------------------------
-# LessonVideo & Worksheet: đăng ký độc lập để xem/lọc toàn bộ danh sách.
-# Ngoài ra 2 model này (và DigitalMap) còn được nhúng StackedInline ngay
-# trong trang Lesson (xem timeline/admin.py) để nhập nhanh trong 1 màn hình.
-# ---------------------------------------------------------------------------
 
 @admin.register(LessonVideo)
 class LessonVideoAdmin(admin.ModelAdmin):
@@ -101,3 +77,4 @@ class WorksheetAdmin(admin.ModelAdmin):
     list_display = ('title', 'lesson', 'order')
     list_filter = ('lesson',)
     search_fields = ('title',)
+    fields = ('lesson', 'title', 'preview_image_url', 'preview_image', 'file_url', 'file', 'order')

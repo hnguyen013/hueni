@@ -1,15 +1,5 @@
 {% comment %}
-  Section "Phiếu học tập" (Task 3.4) — include vào lesson_detail.html
-  (block lesson_sections), ngay sau section Video.
-
-  Field dùng trong partial này (khớp showcase/models.py — Worksheet):
-    lesson.worksheets.all -> mỗi worksheet có:
-      worksheet.title
-      worksheet.preview_image.url (có thể rỗng, blank=True/null=True)
-      worksheet.file.url
-
-  Không cần bọc {% if lesson.worksheets.all %} bên ngoài để tránh query kép;
-  {% for %} rỗng tự không render gì nếu lesson chưa có worksheet nào.
+  Section "Phiếu học tập" — preview_image_src + file_src (URL ngoài ưu tiên).
 {% endcomment %}
 {% load static %}
 
@@ -26,8 +16,8 @@
 
         {# ---- Ảnh xem trước ---- #}
         <div class="aspect-[4/3] w-full overflow-hidden bg-surface-container">
-          {% if worksheet.preview_image %}
-            <img src="{{ worksheet.preview_image.url }}"
+          {% if worksheet.preview_image_src %}
+            <img src="{{ worksheet.preview_image_src }}"
                  alt="{{ worksheet.title }}"
                  class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
           {% else %}
@@ -47,8 +37,9 @@
             {{ worksheet.title }}
           </h3>
 
-          <a href="{{ worksheet.file.url }}"
-             download
+          {% if worksheet.file_src %}
+          <a href="{{ worksheet.file_src }}"
+             target="_blank" rel="noopener"
              class="mt-auto inline-flex items-center justify-center gap-2 font-label-md text-label-md uppercase tracking-wider bg-primary text-on-primary rounded-full px-6 py-3 hover:opacity-80 transition-all duration-300">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="1.5" class="w-4 h-4">
@@ -57,6 +48,7 @@
             </svg>
             Tải phiếu học tập
           </a>
+          {% endif %}
         </div>
       </div>
     {% endfor %}

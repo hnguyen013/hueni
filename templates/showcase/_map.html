@@ -1,20 +1,5 @@
 {% comment %}
-  Section "Bản đồ số" (Task 3.6) — 3 kiểu: embed / image / geojson.
-  Include vào lesson_detail.html (block lesson_sections).
-
-  Field dùng (khớp showcase/models.py — DigitalMap, MapMarker):
-    lesson.maps.all -> mỗi map: map.title, map.map_type ('embed'|'image'|'geojson'),
-      map.embed_url, map.image.url, map.geojson_file.url, map.markers.all
-        marker.label, marker.lat, marker.lng, marker.note
-
-  - map_type = embed   -> nhúng iframe embed_url.
-  - map_type = image   -> ảnh tĩnh, click phóng to (lightbox), JS inline nhỏ
-                          (không cần file JS riêng).
-  - map_type = geojson -> dùng Leaflet.js (CDN) load geojson_file, vẽ marker
-                          từ map.markers.all (lat/lng/label/note) dạng popup.
-                          Leaflet CDN chỉ được nhúng khi có ít nhất 1 map
-                          kiểu geojson trong lesson, tránh tải thừa cho các
-                          bài học không dùng geojson.
+  Section "Bản đồ số" — map.image_src cho kiểu image.
 {% endcomment %}
 {% load static map_extras %}
 
@@ -42,19 +27,19 @@
                     loading="lazy" allowfullscreen></iframe>
           </div>
 
-        {% elif map.map_type == 'image' and map.image %}
+        {% elif map.map_type == 'image' and map.image_src %}
           <div class="p-6">
             <button type="button"
                     class="block w-full rounded-lg overflow-hidden cursor-zoom-in group"
                     onclick="document.getElementById('map-lightbox-{{ map.id }}').classList.remove('hidden')">
-              <img src="{{ map.image.url }}" alt="{{ map.title|default:'Bản đồ số' }}"
+              <img src="{{ map.image_src }}" alt="{{ map.title|default:'Bản đồ số' }}"
                    class="w-full h-auto max-h-[480px] object-cover transition-transform duration-300 group-hover:scale-[1.02]">
             </button>
           </div>
           <div id="map-lightbox-{{ map.id }}"
                class="hidden fixed inset-0 z-[60] bg-tertiary/90 backdrop-blur-sm flex items-center justify-center p-6"
                onclick="this.classList.add('hidden')">
-            <img src="{{ map.image.url }}" alt="{{ map.title|default:'Bản đồ số' }}"
+            <img src="{{ map.image_src }}" alt="{{ map.title|default:'Bản đồ số' }}"
                  class="max-w-[90vw] max-h-[85vh] object-contain rounded-xl"
                  onclick="event.stopPropagation()">
             <button type="button"

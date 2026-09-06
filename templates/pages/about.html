@@ -2,28 +2,7 @@
 {% load static %}
 
 {% comment %}
-  Trang Giới thiệu (Task 3.8) — dựng theo screen.png + code.html (Stitch),
-  gần như pixel-perfect: Hero -> Tầm nhìn/Sứ mệnh -> Giá trị cốt lõi -> Đội ngũ.
-
-  Field dùng (khớp pages/models.py — SiteContent dùng chung nhiều section,
-  TeamMember riêng):
-    hero          -> SiteContent (section='about_hero'), 1 bản ghi
-                     hero.title, hero.body, hero.image.url
-    vision        -> SiteContent (section='about_vision'), 1 bản ghi
-                     vision.icon (tên Material Symbol, vd 'visibility'), vision.title, vision.body
-    mission       -> SiteContent (section='about_mission'), 1 bản ghi
-                     mission.icon (vd 'explore'), mission.title, mission.body
-    core_values   -> SiteContent.objects.filter(section='about_value').order_by('order')
-                     value.icon, value.title, value.body — vòng lặp bao nhiêu bản ghi
-                     cũng được, grid tự chia 3 cột ở desktop
-    team_members  -> TeamMember.objects.filter(is_active=True).order_by('order')
-                     member.avatar.url, member.name, member.role
-
-  View thật (Task 4.2) chỉ cần truyền đúng 5 biến trên (hero/vision/mission
-  dùng .first() vì mỗi section chỉ 1 bản ghi, core_values/team_members là
-  queryset nhiều bản ghi) là template này chạy đúng ngay, không cần sửa gì.
-  Nếu 1 trong 3 biến hero/vision/mission là None (chưa nhập liệu qua admin),
-  template tự dùng text mặc định bằng filter |default để không vỡ giao diện.
+  Trang Giới thiệu — hero.image_src, member.avatar_src (URL ngoài ưu tiên).
 {% endcomment %}
 
 {% block title %}Giới thiệu — Học Liệu Số{% endblock %}
@@ -40,9 +19,9 @@
     {{ hero.body|default:"Kết nối quá khứ với tương lai thông qua không gian số. Chúng tôi tin rằng di sản không chỉ nằm trong bảo tàng, mà phải được sống và thở trong từng tương tác học tập của thế hệ mới." }}
   </p>
 
-  {% if hero.image %}
+  {% if hero.image_src %}
     <div class="w-full h-[320px] md:h-[500px] rounded-xl overflow-hidden shadow-[0_20px_40px_rgba(0,45,55,0.08)] relative">
-      <img class="w-full h-full object-cover" src="{{ hero.image.url }}" alt="{{ hero.title|default:'Câu chuyện của chúng tôi' }}">
+      <img class="w-full h-full object-cover" src="{{ hero.image_src }}" alt="{{ hero.title|default:'Câu chuyện của chúng tôi' }}">
     </div>
   {% endif %}
 </section>
@@ -114,9 +93,9 @@
                     shadow-[0_10px_20px_rgba(0,45,55,0.05)]
                     group-hover:scale-105 transition-transform duration-300
                     border-2 border-transparent group-hover:border-primary-fixed-dim">
-          {% if member.avatar %}
+          {% if member.avatar_src %}
             <img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-                 src="{{ member.avatar.url }}" alt="{{ member.name }}">
+                 src="{{ member.avatar_src }}" alt="{{ member.name }}">
           {% endif %}
         </div>
         <h4 class="font-headline-lg-mobile text-base md:text-headline-lg-mobile text-primary">{{ member.name }}</h4>
