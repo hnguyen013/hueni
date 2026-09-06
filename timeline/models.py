@@ -28,7 +28,15 @@ class Lesson(models.Model):
     year_label = models.CharField(max_length=100, blank=True)
     summary = models.TextField(blank=True)
     body = models.TextField(blank=True)
-    cover_image = models.ImageField(upload_to='lessons/covers/')
+    # Upload file (sẽ mất trên Render free) HOẶC dán URL ảnh ngoài (bền vững).
+    cover_image = models.ImageField(
+        upload_to='lessons/covers/', blank=True, null=True,
+        help_text='Upload ảnh bìa (sẽ mất khi redeploy trên free tier). Ưu tiên dùng Cover image url bên dưới.',
+    )
+    cover_image_url = models.URLField(
+        blank=True,
+        help_text='URL ảnh bìa công khai (Imgur, Cloudinary, Drive public...). Ưu tiên hơn file upload.',
+    )
     order = models.PositiveIntegerField(default=0)
     is_published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -43,6 +51,16 @@ class Lesson(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        # Task 4.1 sẽ đăng ký route 'timeline:lesson_detail' tương ứng.
-        # Dùng path tĩnh ở đây để model không phụ thuộc vào urls.py (chưa có ở task này).
         return f'/bai-hoc/{self.slug}/'
+
+    @property
+    def cover_image_src(self):
+        """URL ảnh bìa: ưu tiên cover_image_url, fallback file upload."""
+        if self.cover_image_url:
+            return self.cover_image_url
+        if self.cover_image:
+            try:
+                return self.cover_image.url
+            except ValueError:
+                return ''
+        return ''

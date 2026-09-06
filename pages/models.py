@@ -8,7 +8,11 @@ class TeamMember(models.Model):
     role = models.CharField(max_length=200, blank=True)
     avatar = models.ImageField(
         upload_to='team/avatars/', blank=True, null=True,
-        help_text='Ảnh chân dung, hiển thị avatar tròn grayscale.',
+        help_text='Upload avatar (sẽ mất khi redeploy). Ưu tiên Avatar url.',
+    )
+    avatar_url = models.URLField(
+        blank=True,
+        help_text='URL ảnh avatar công khai — ưu tiên hơn file upload.',
     )
     bio = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)
@@ -23,6 +27,17 @@ class TeamMember(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def avatar_src(self):
+        if self.avatar_url:
+            return self.avatar_url
+        if self.avatar:
+            try:
+                return self.avatar.url
+            except ValueError:
+                return ''
+        return ''
 
 
 class SiteContent(models.Model):
@@ -53,7 +68,14 @@ class SiteContent(models.Model):
     title = models.CharField(max_length=255, blank=True)
     subtitle = models.CharField(max_length=255, blank=True)
     body = models.TextField(blank=True)
-    image = models.ImageField(upload_to='pages/site_content/', blank=True, null=True)
+    image = models.ImageField(
+        upload_to='pages/site_content/', blank=True, null=True,
+        help_text='Upload ảnh (sẽ mất khi redeploy). Ưu tiên Image url.',
+    )
+    image_url = models.URLField(
+        blank=True,
+        help_text='URL ảnh công khai — ưu tiên hơn file upload.',
+    )
     icon = models.CharField(
         max_length=100, blank=True,
         help_text='Tên icon (vd cho Giá trị cốt lõi), tuỳ chọn.',
@@ -67,3 +89,14 @@ class SiteContent(models.Model):
 
     def __str__(self):
         return f'[{self.get_section_display()}] {self.title or self.key}'
+
+    @property
+    def image_src(self):
+        if self.image_url:
+            return self.image_url
+        if self.image:
+            try:
+                return self.image.url
+            except ValueError:
+                return ''
+        return ''

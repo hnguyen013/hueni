@@ -35,9 +35,21 @@ class Worksheet(models.Model):
     )
     title = models.CharField(max_length=255)
     preview_image = models.ImageField(
-        upload_to='worksheets/previews/', blank=True, null=True
+        upload_to='worksheets/previews/', blank=True, null=True,
+        help_text='Upload ảnh xem trước (sẽ mất khi redeploy). Ưu tiên Preview image url.',
     )
-    file = models.FileField(upload_to='worksheets/files/')
+    preview_image_url = models.URLField(
+        blank=True,
+        help_text='URL ảnh xem trước công khai — ưu tiên hơn file upload.',
+    )
+    file = models.FileField(
+        upload_to='worksheets/files/', blank=True, null=True,
+        help_text='Upload file phiếu (sẽ mất khi redeploy). Ưu tiên File url.',
+    )
+    file_url = models.URLField(
+        blank=True,
+        help_text='URL file tải về (Google Drive public, Dropbox...). Ưu tiên hơn file upload.',
+    )
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -47,6 +59,28 @@ class Worksheet(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def preview_image_src(self):
+        if self.preview_image_url:
+            return self.preview_image_url
+        if self.preview_image:
+            try:
+                return self.preview_image.url
+            except ValueError:
+                return ''
+        return ''
+
+    @property
+    def file_src(self):
+        if self.file_url:
+            return self.file_url
+        if self.file:
+            try:
+                return self.file.url
+            except ValueError:
+                return ''
+        return ''
 
 
 class QuizShowcase(models.Model):
@@ -127,7 +161,11 @@ class DigitalMap(models.Model):
     )
     image = models.ImageField(
         upload_to='maps/images/', blank=True, null=True,
-        help_text="Dùng khi map_type = 'image'.",
+        help_text="Upload ảnh bản đồ (sẽ mất khi redeploy). Ưu tiên Image url.",
+    )
+    image_url = models.URLField(
+        blank=True,
+        help_text="URL ảnh bản đồ công khai — dùng khi map_type = 'image'.",
     )
     geojson_file = models.FileField(
         upload_to='maps/geojson/', blank=True, null=True,
@@ -142,6 +180,17 @@ class DigitalMap(models.Model):
 
     def __str__(self):
         return self.title or f'Map #{self.pk} - {self.lesson.title}'
+
+    @property
+    def image_src(self):
+        if self.image_url:
+            return self.image_url
+        if self.image:
+            try:
+                return self.image.url
+            except ValueError:
+                return ''
+        return ''
 
 
 class MapMarker(models.Model):
@@ -189,7 +238,14 @@ class GalleryImage(models.Model):
     gallery = models.ForeignKey(
         Gallery, on_delete=models.CASCADE, related_name='images'
     )
-    image = models.ImageField(upload_to='galleries/images/')
+    image = models.ImageField(
+        upload_to='galleries/images/', blank=True, null=True,
+        help_text='Upload ảnh (sẽ mất khi redeploy). Ưu tiên Image url.',
+    )
+    image_url = models.URLField(
+        blank=True,
+        help_text='URL ảnh công khai — ưu tiên hơn file upload.',
+    )
     caption = models.CharField(max_length=255, blank=True)
     order = models.PositiveIntegerField(default=0)
 
@@ -200,3 +256,14 @@ class GalleryImage(models.Model):
 
     def __str__(self):
         return self.caption or f'Image #{self.pk}'
+
+    @property
+    def image_src(self):
+        if self.image_url:
+            return self.image_url
+        if self.image:
+            try:
+                return self.image.url
+            except ValueError:
+                return ''
+        return ''
